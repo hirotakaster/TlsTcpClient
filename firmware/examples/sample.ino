@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "TlsTcpSocket/TlsTcpSocket.h"
+#include "TlsTcpClient/TlsTcpClient.h"
 
 #define LET_ENCRYPT_CA_PEM                                              \
 "-----BEGIN CERTIFICATE----- \r\n"                                      \
@@ -44,7 +44,7 @@ void loop() {
   unsigned char buff[256];
 
   // connect to HTTPS server
-  TlsTcpSocket tlsTcpSocket;
+  TlsTcpClient tlsTcpSocket;
   tlsTcpSocket.init(letencryptCaPem, sizeof(letencryptCaPem));
   tlsTcpSocket.connect("www.hirotakaster.com", 443);
   delay(1000);
