@@ -42,7 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define TLS_MIN_DELAY 300
 
-class TlsTcpSocket {
+class TlsTcpClient {
 
 private:
     mbedtls_entropy_context entropy;
@@ -61,8 +61,8 @@ private:
     int handShake();
 
 public:
-    TlsTcpSocket();
-    ~TlsTcpSocket(){ close(); };
+    TlsTcpClient();
+    ~TlsTcpClient(){ close(); };
     void close();
 
     int init(const char *rootCaPem, const size_t rootCaPemSize);

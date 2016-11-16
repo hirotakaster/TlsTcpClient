@@ -1,24 +1,24 @@
-#include "TlsTcpSocket.h"
+#include "TlsTcpClient.h"
 
-TlsTcpSocket::TlsTcpSocket() {
+TlsTcpClient::TlsTcpClient() {
   connected = false;
 }
 
-int TlsTcpSocket::send_Tls(void *ctx, const unsigned char *buf, size_t len) {
-  TlsTcpSocket *sock = (TlsTcpSocket *)ctx;
+int TlsTcpClient::send_Tls(void *ctx, const unsigned char *buf, size_t len) {
+  TlsTcpClient *sock = (TlsTcpClient *)ctx;
 
   int ret = sock->client.write(buf, len);
   sock->client.flush();
   return ret;
 }
 
-int TlsTcpSocket::recv_Tls(void *ctx, unsigned char *buf, size_t len) {
-  TlsTcpSocket *sock = (TlsTcpSocket *)ctx;
+int TlsTcpClient::recv_Tls(void *ctx, unsigned char *buf, size_t len) {
+  TlsTcpClient *sock = (TlsTcpClient *)ctx;
   int ret = sock->client.read(buf, len);
   return ret;
 }
 
-int TlsTcpSocket::tls_rng(void* handle, uint8_t* data, const size_t len_) {
+int TlsTcpClient::tls_rng(void* handle, uint8_t* data, const size_t len_) {
   size_t len = len_;
   while (len>=4) {
     *((uint32_t*)data) = HAL_RNG_GetRandomNumber();
@@ -31,12 +31,12 @@ int TlsTcpSocket::tls_rng(void* handle, uint8_t* data, const size_t len_) {
   return 0;
 }
 
-int TlsTcpSocket::init(const char *rootCaPem, const size_t rootCaPemSize) {
+int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   int ret;
   connected = false;
   mbedtls_ssl_config_init(&conf);
   mbedtls_x509_crt_init(&cacert);
-  mbedtls_ssl_conf_rng(&conf, &TlsTcpSocket::tls_rng, nullptr);
+  mbedtls_ssl_conf_rng(&conf, &TlsTcpClient::tls_rng, nullptr);
 
   if ((ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT,
                   MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
@@ -63,11 +63,11 @@ int TlsTcpSocket::init(const char *rootCaPem, const size_t rootCaPemSize) {
   }
 
   mbedtls_ssl_set_timer_cb(&ssl, &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
-  mbedtls_ssl_set_bio(&ssl, this, &TlsTcpSocket::send_Tls,  &TlsTcpSocket::recv_Tls, nullptr);
+  mbedtls_ssl_set_bio(&ssl, this, &TlsTcpClient::send_Tls,  &TlsTcpClient::recv_Tls, nullptr);
   return 0;
 }
 
-void TlsTcpSocket::close() {
+void TlsTcpClient::close() {
   connected = false;
   mbedtls_x509_crt_free (&cacert);
   mbedtls_ssl_config_free (&conf);
@@ -76,21 +76,21 @@ void TlsTcpSocket::close() {
 };
 
 
-int TlsTcpSocket::connect(char* domain, uint16_t port) {
+int TlsTcpClient::connect(char* domain, uint16_t port) {
   if (!client.connect(domain, port)) {
       return -1;
   }
   return this->handShake();
 }
 
-int TlsTcpSocket::connect(uint8_t *ip, uint16_t port) {
+int TlsTcpClient::connect(uint8_t *ip, uint16_t port) {
   if (!client.connect(ip, port)) {
     return -1;
   }
   return this->handShake();
 }
 
-int TlsTcpSocket::handShake() {
+int TlsTcpClient::handShake() {
   int ret;
   while ((ret = mbedtls_ssl_handshake_client_step( &ssl )) == 0) {
     delay(TLS_MIN_DELAY);
@@ -103,14 +103,14 @@ int TlsTcpSocket::handShake() {
   return ret;
 }
 
-int TlsTcpSocket::write(unsigned char *buff, int length) {
+int TlsTcpClient::write(unsigned char *buff, int length) {
   if (connected)
     return mbedtls_ssl_write( &ssl, buff, length );
   else
     return -1;
 }
 
-int TlsTcpSocket::read(unsigned char *buff, int length) {
+int TlsTcpClient::read(unsigned char *buff, int length) {
   if (connected)
     return mbedtls_ssl_read( &ssl, buff, length);
   else
