@@ -1,5 +1,5 @@
 /*
-MbedTlsSocket library for Particle Photon
+TlsTcpClient library for Particle Photon
 This software is released under the MIT License.
 
 Copyright (c) 2016 Hirotaka Niisato
