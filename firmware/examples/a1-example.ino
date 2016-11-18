@@ -2,6 +2,7 @@
 
 #include "TlsTcpClient/TlsTcpClient.h"
 
+// Photon connect Let's Encrypt Website in this example.
 #define LET_ENCRYPT_CA_PEM                                              \
 "-----BEGIN CERTIFICATE----- \r\n"                                      \
 "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\r\n"  \
@@ -43,9 +44,12 @@ void setup() {
 void loop() {
   unsigned char buff[256];
 
-  // connect to HTTPS server
   TlsTcpClient tlsTcpSocket;
+
+  // setup Root CA pem.
   tlsTcpSocket.init(letencryptCaPem, sizeof(letencryptCaPem));
+
+  // connect HTTPS server.
   tlsTcpSocket.connect("www.hirotakaster.com", 443);
 
   // send to HTTPS request.
