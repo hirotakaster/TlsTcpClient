@@ -2,6 +2,7 @@
 This library is based [mbedTLS](https://tls.mbed.org/)  library, this can use for several TLS server. Now this library is compatible with every TLS server certificate, client certification is not supported.
 
 This library's Cipher Suite is based AES and SHA, here is cipher suite list.
+* TLS_DHE_PSK_WITH_AES_256_CBC_SHA
 * TLS_DHE_PSK_WITH_AES_128_GCM_SHA256
 * TLS_DHE_PSK_WITH_AES_128_CBC_SHA256
 * TLS_DHE_PSK_WITH_AES_128_CBC_SHA
@@ -18,6 +19,7 @@ This library's Cipher Suite is based AES and SHA, here is cipher suite list.
 * TLS_PSK_WITH_AES_128_GCM_SHA256
 * TLS_PSK_WITH_AES_128_CBC_SHA256
 * TLS_PSK_WITH_AES_128_CBC_SHA
+* TLS_EMPTY_RENOGOTIATION_INFO_SCSV
 
 
 ## Example
