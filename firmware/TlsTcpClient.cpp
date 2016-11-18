@@ -95,6 +95,12 @@ int TlsTcpClient::connect(uint8_t *ip, uint16_t port) {
 
 int TlsTcpClient::handShake() {
   int ret;
+  /*
+  while ((ret = mbedtls_ssl_handshake_client_step( &ssl )) == 0) {
+      delay(TLS_MIN_DELAY);
+  }
+  */
+
   do {
       while (ssl.state != MBEDTLS_SSL_HANDSHAKE_OVER) {
           ret = mbedtls_ssl_handshake_client_step(&ssl);
@@ -137,4 +143,8 @@ int TlsTcpClient::read(unsigned char *buff, int length) {
       return ret;
   } else
     return -1;
+}
+
+int TlsTcpClient::available() {
+  return client.available();
 }
