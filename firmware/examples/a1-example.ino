@@ -2,7 +2,11 @@
 
 #include "TlsTcpClient/TlsTcpClient.h"
 
-// Photon connect Let's Encrypt Website in this example.
+// 
+// This example connect to the Let's Encrypt HTTPS server.
+// Let's Encrypt ROOT Ca PEM file is here ( https://letsencrypt.org/certificates/ )
+// If you want to use other Root CA, check your server administrator or own Root CA pem.
+//
 #define LET_ENCRYPT_CA_PEM                                              \
 "-----BEGIN CERTIFICATE----- \r\n"                                      \
 "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\r\n"  \
@@ -52,16 +56,18 @@ void loop() {
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
     
-    // send to HTTPS request.
+    // Send request to HTTPS web server.
     int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
     client.write(buff, len );
 
-    // GET HTTPS request.
+    // GET HTTPS response.
     memset(buff, 0, sizeof(buff));
     while(1) {
+        // check response is available.
         if (!client.available()) {
             delay(100);
         } else {
+            // read renponse.
             int ret = client.read(buff, sizeof(buff) - 1);
             if (ret > 0) {
                 Serial.println((char *)buff);
