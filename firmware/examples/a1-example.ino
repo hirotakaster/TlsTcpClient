@@ -42,30 +42,32 @@ void setup() {
 }
 
 void loop() {
-  unsigned char buff[256];
+    unsigned char buff[256];
 
-  TlsTcpClient tlsTcpSocket;
+    TlsTcpClient client;
 
-  // setup Root CA pem.
-  tlsTcpSocket.init(letencryptCaPem, sizeof(letencryptCaPem));
+    // setup Root CA pem.
+    client.init(letencryptCaPem, sizeof(letencryptCaPem));
+    
+    // connect HTTPS server.
+    client.connect("www.hirotakaster.com", 443);
+    
+    // send to HTTPS request.
+    int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
+    client.write(buff, len );
 
-  // connect HTTPS server.
-  tlsTcpSocket.connect("www.hirotakaster.com", 443);
-
-  // send to HTTPS request.
-  int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
-  tlsTcpSocket.write(buff, len );
-
-  // GET HTTPS request.
-  int ret = 0;
-  memset(buff, 0, sizeof(buff));
-  do {
-    ret = tlsTcpSocket.read(buff, sizeof(buff) - 1);
-    if (ret > 0) {
-        Serial.println((char *)buff);
-        break;
-    }
-  } while (ret == MBEDTLS_ERR_SSL_WANT_READ);
-  delay(5000);
+    // GET HTTPS request.
+    memset(buff, 0, sizeof(buff));
+    while(1) {
+        if (!client.available()) {
+            delay(100);
+        } else {
+            int ret = client.read(buff, sizeof(buff) - 1);
+            if (ret > 0) {
+                Serial.println((char *)buff);
+                break;
+            }
+        }
+    };
+    delay(5000);
 }
-
