@@ -35,7 +35,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "entropy.h"
 #include "ctr_drbg.h"
 #include "error.h"
-#include "certs.h"
 #include "timing.h"
 #include "ssl_internal.h"
 #include "timer_hal.h"
