@@ -40,8 +40,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ssl_internal.h"
 #include "timer_hal.h"
 
-#define TLS_MIN_DELAY 300
-
 class TlsTcpClient {
 
 private:
@@ -70,6 +68,7 @@ public:
     int connect(char* domain, uint16_t port);
     int write(unsigned char *buff, int length);
     int read(unsigned char *buff, int length);
+    int available();
     bool isConnected() { return connected; }
 };
 

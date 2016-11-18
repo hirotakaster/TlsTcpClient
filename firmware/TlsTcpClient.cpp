@@ -8,13 +8,22 @@ int TlsTcpClient::send_Tls(void *ctx, const unsigned char *buf, size_t len) {
   TlsTcpClient *sock = (TlsTcpClient *)ctx;
 
   int ret = sock->client.write(buf, len);
+  if (ret == 0)
+      return MBEDTLS_ERR_SSL_WANT_WRITE;
   sock->client.flush();
   return ret;
 }
 
 int TlsTcpClient::recv_Tls(void *ctx, unsigned char *buf, size_t len) {
   TlsTcpClient *sock = (TlsTcpClient *)ctx;
+
+  if (sock->client.available() == 0)
+      return MBEDTLS_ERR_SSL_WANT_READ;
+
   int ret = sock->client.read(buf, len);
+  if (ret == 0) {
+      return MBEDTLS_ERR_SSL_WANT_READ;
+  }
   return ret;
 }
 
@@ -40,14 +49,10 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
 
   if ((ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT,
                   MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
-    Serial.print("mbedtls_ssl_config_defaults:");
-    Serial.println(ret);
     return ret;
   }
 
   if ((ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *)rootCaPem, rootCaPemSize)) < 0) {
-    Serial.print("mbedtls_x509_crt_parse : ");
-    Serial.println(ret);
     return ret;
   }
   mbedtls_ssl_conf_min_version(&conf, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
@@ -57,8 +62,6 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   mbedtls_ssl_free(&ssl);
   mbedtls_ssl_init(&ssl);
   if((ret = mbedtls_ssl_setup(&ssl, &conf)) != 0) {
-    Serial.print("mbedtls_ssl_setup");
-    Serial.println(ret);
     return ret;
   }
 
@@ -92,9 +95,13 @@ int TlsTcpClient::connect(uint8_t *ip, uint16_t port) {
 
 int TlsTcpClient::handShake() {
   int ret;
-  while ((ret = mbedtls_ssl_handshake_client_step( &ssl )) == 0) {
-    delay(TLS_MIN_DELAY);
-  }
+  do {
+      while (ssl.state != MBEDTLS_SSL_HANDSHAKE_OVER) {
+          ret = mbedtls_ssl_handshake_client_step(&ssl);
+          if (ret != 0)
+              break;
+      }
+  } while(ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 
   if (ssl.state == MBEDTLS_SSL_HANDSHAKE_OVER) {
     connected = true;
@@ -104,15 +111,30 @@ int TlsTcpClient::handShake() {
 }
 
 int TlsTcpClient::write(unsigned char *buff, int length) {
-  if (connected)
-    return mbedtls_ssl_write( &ssl, buff, length );
-  else
+  if (connected) {
+      int ret = mbedtls_ssl_write( &ssl, buff, length );
+      return ret;
+  } else
     return -1;
 }
 
 int TlsTcpClient::read(unsigned char *buff, int length) {
-  if (connected)
-    return mbedtls_ssl_read( &ssl, buff, length);
-  else
+  if (connected) {
+      int ret = mbedtls_ssl_read(&ssl, buff, length);
+      if (ret < 0) {
+            switch (ret) {
+            case MBEDTLS_ERR_SSL_WANT_READ:
+                break;
+            case MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE:
+                ret = 0;
+                break;
+            case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+            default:
+                close();
+                return -1;
+          }
+      }
+      return ret;
+  } else
     return -1;
 }

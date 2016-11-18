@@ -47,18 +47,21 @@ void loop() {
   TlsTcpClient tlsTcpSocket;
   tlsTcpSocket.init(letencryptCaPem, sizeof(letencryptCaPem));
   tlsTcpSocket.connect("www.hirotakaster.com", 443);
-  delay(1000);
 
   // send to HTTPS request.
   int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
   tlsTcpSocket.write(buff, len );
-  delay(1000);
 
   // GET HTTPS request.
+  int ret = 0;
   memset(buff, 0, sizeof(buff));
-  tlsTcpSocket.read(buff, sizeof(buff) - 1);
-  Serial.println((char *)buff);
-  tlsTcpSocket.close();
+  do {
+    ret = tlsTcpSocket.read(buff, sizeof(buff) - 1);
+    if (ret > 0) {
+        Serial.println((char *)buff);
+        break;
+    }
+  } while (ret == MBEDTLS_ERR_SSL_WANT_READ);
   delay(5000);
 }
 
