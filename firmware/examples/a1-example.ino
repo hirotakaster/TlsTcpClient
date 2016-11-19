@@ -1,8 +1,8 @@
 #include "application.h"
 
-#include "TlsTcpClient/TlsTcpClient.h"
+#include "TlsTcpClient.h"
 
-// 
+//
 // This example connect to the Let's Encrypt HTTPS server.
 // Let's Encrypt ROOT Ca PEM file is here ( https://letsencrypt.org/certificates/ )
 // If you want to use other Root CA, check your server administrator or own Root CA pem.
@@ -41,8 +41,18 @@
 "-----END CERTIFICATE----- \r\n"
 const char letencryptCaPem[] = LET_ENCRYPT_CA_PEM;
 
+#define ONE_DAY_MILLIS (24 * 60 * 60 * 1000)
+unsigned long lastSync = millis();
+
 void setup() {
     Serial.begin(9600);
+
+    // need a Particle time sync for X509 certificates verify.
+    if (millis() - lastSync > ONE_DAY_MILLIS) {
+        Particle.syncTime();
+        lastSync = millis();
+    }
+    Serial.print(Time.timeStr());
 }
 
 void loop() {
@@ -52,10 +62,10 @@ void loop() {
 
     // setup Root CA pem.
     client.init(letencryptCaPem, sizeof(letencryptCaPem));
-    
+
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
-    
+
     // Send request to HTTPS web server.
     int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
     client.write(buff, len );
@@ -70,10 +80,11 @@ void loop() {
             // read renponse.
             int ret = client.read(buff, sizeof(buff) - 1);
             if (ret > 0) {
-                Serial.println((char *)buff);
-                break;
+                  Serial.println((char *)buff);
+                  break;
             }
         }
     };
     delay(5000);
 }
+
