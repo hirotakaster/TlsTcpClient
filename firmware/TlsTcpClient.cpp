@@ -59,7 +59,6 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   mbedtls_ssl_conf_ca_chain(&conf, &cacert, nullptr);
   mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
 
-  mbedtls_ssl_free(&ssl);
   mbedtls_ssl_init(&ssl);
   if((ret = mbedtls_ssl_setup(&ssl, &conf)) != 0) {
     return ret;
