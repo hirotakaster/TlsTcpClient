@@ -26,6 +26,7 @@ This library's Cipher Suite is based AES and SHA, here is cipher suite list.
 Some sample sketches included(firmware/examples/a1-example.ino).
 
 ```C++
+
 #include "application.h"
 #include "TlsTcpClient/TlsTcpClient.h"
 
@@ -114,53 +115,6 @@ void loop() {
             if (ret > 0) {
                   Serial.println((char *)buff);
                   break;
-            }
-        }
-    };
-    delay(5000);
-}
-"NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5\r\n"  \
-"ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur\r\n"  \
-"TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC\r\n"  \
-"jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc\r\n"  \
-"oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq\r\n"  \
-"4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA\r\n"  \
-"mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d\r\n"  \
-"emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\r\n"  \
-"-----END CERTIFICATE----- \r\n"
-const char letencryptCaPem[] = LET_ENCRYPT_CA_PEM;
-
-void setup() {
-    Serial.begin(9600);
-}
-
-void loop() {
-    unsigned char buff[256];
-
-    TlsTcpClient client;
-
-    // setup Root CA pem.
-    client.init(letencryptCaPem, sizeof(letencryptCaPem));
-    
-    // connect HTTPS server.
-    client.connect("www.hirotakaster.com", 443);
-    
-    // Send request to HTTPS web server.
-    int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
-    client.write(buff, len );
-
-    // GET HTTPS response.
-    memset(buff, 0, sizeof(buff));
-    while(1) {
-        // check response is available.
-        if (!client.available()) {
-            delay(100);
-        } else {
-            // read renponse.
-            int ret = client.read(buff, sizeof(buff) - 1);
-            if (ret > 0) {
-                Serial.println((char *)buff);
-                break;
             }
         }
     };
