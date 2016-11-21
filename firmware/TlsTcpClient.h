@@ -67,8 +67,10 @@ public:
     int connect(char* domain, uint16_t port);
     int write(unsigned char *buff, int length);
     int read(unsigned char *buff, int length);
+
     int available();
     bool isConnected() { return connected; }
+    bool verify();
 };
 
 #endif

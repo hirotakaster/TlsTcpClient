@@ -538,4 +538,3 @@ extern "C" int _gettimeofday( struct timeval *tv, void *tzvp )
 
 
 #endif /* MBEDTLS_TIMING_C */
-

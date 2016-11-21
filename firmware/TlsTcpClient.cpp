@@ -57,6 +57,8 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   }
   mbedtls_ssl_conf_min_version(&conf, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
   mbedtls_ssl_conf_ca_chain(&conf, &cacert, nullptr);
+
+  // if server certificates is not valid, connection will success. check certificates on verify() function.
   mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
 
   mbedtls_ssl_init(&ssl);
@@ -79,16 +81,31 @@ void TlsTcpClient::close() {
 
 
 int TlsTcpClient::connect(char* domain, uint16_t port) {
+  int ret;
   if (!client.connect(domain, port)) {
       return -1;
   }
+
+  if((ret = mbedtls_ssl_set_hostname(&ssl, domain)) != 0) {
+    return ret;
+  }
+
   return this->handShake();
 }
 
 int TlsTcpClient::connect(uint8_t *ip, uint16_t port) {
+  int ret;
+  char buffer[16];
+  sprintf(buffer, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+
   if (!client.connect(ip, port)) {
     return -1;
   }
+
+  if((ret = mbedtls_ssl_set_hostname(&ssl, buffer)) != 0) {
+    return ret;
+  }
+
   return this->handShake();
 }
 
@@ -140,4 +157,17 @@ int TlsTcpClient::read(unsigned char *buff, int length) {
 
 int TlsTcpClient::available() {
   return client.available();
+}
+
+bool TlsTcpClient::verify() {
+  int ret;
+  if ((ret = mbedtls_ssl_get_verify_result(&ssl)) != 0 ) {
+    char vrfy_buf[512];
+    mbedtls_x509_crt_verify_info( vrfy_buf, sizeof( vrfy_buf ), "  ! ", ret );
+
+    Serial.println(vrfy_buf);
+
+    return false;
+  }
+  return true;
 }
