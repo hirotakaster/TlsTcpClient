@@ -95,6 +95,7 @@ void loop() {
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
 
+    // verity server certificate.
     if (!client.verify()) {
       Serial.println("Server Certificates is in-valid.");
     }
