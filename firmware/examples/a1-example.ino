@@ -67,6 +67,7 @@ void loop() {
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
 
+    // check server certificate. if verify failed, TLS connection is alive.
     if (!client.verify()) {
       Serial.println("Server Certificates is in-valid.");
     }
