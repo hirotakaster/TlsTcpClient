@@ -28,6 +28,7 @@ Some sample sketches included(firmware/examples/a1-example.ino).
 ```C++
 
 #include "application.h"
+
 #include "TlsTcpClient/TlsTcpClient.h"
 
 //
@@ -95,31 +96,30 @@ void loop() {
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
 
-    // verity server certificate.
+    // check server certificate. if verify failed, TLS connection is alive.
     if (!client.verify()) {
       Serial.println("Server Certificates is in-valid.");
     }
 
     // Send request to HTTPS web server.
-    int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
+    int len = sprintf((char *)buff, "GET / HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
     client.write(buff, len );
 
     // GET HTTPS response.
     memset(buff, 0, sizeof(buff));
     while(1) {
-        // check response is available.
-        if (!client.available()) {
+        // read renponse.
+        memset(buff, 0, sizeof(buff));
+        int ret = client.read(buff, sizeof(buff) - 1);
+        if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
             delay(100);
+        } else if (ret <= 0) {
+            break;
         } else {
-            // read renponse.
-            int ret = client.read(buff, sizeof(buff) - 1);
-            if (ret > 0) {
-                  Serial.println((char *)buff);
-                  break;
-            }
+            Serial.println((char *)buff);
         }
-    };
-    delay(5000);
+    }
+    delay(10000);
 }
 
 ```
