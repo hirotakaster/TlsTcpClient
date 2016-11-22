@@ -87,4 +87,3 @@ int mbedtls_hardware_poll( void *data,
 #endif
 
 #endif /* entropy_poll.h */
-

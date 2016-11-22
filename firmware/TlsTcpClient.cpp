@@ -7,27 +7,36 @@ TlsTcpClient::TlsTcpClient() {
 int TlsTcpClient::send_Tls(void *ctx, const unsigned char *buf, size_t len) {
   TlsTcpClient *sock = (TlsTcpClient *)ctx;
 
+  if (!sock->client.connected()) {
+    return -1;
+  }
+
   int ret = sock->client.write(buf, len);
-  if (ret == 0)
+  if (ret == 0) {
       return MBEDTLS_ERR_SSL_WANT_WRITE;
+  }
   sock->client.flush();
   return ret;
 }
 
 int TlsTcpClient::recv_Tls(void *ctx, unsigned char *buf, size_t len) {
   TlsTcpClient *sock = (TlsTcpClient *)ctx;
+  if (!sock->client.connected()) {
+    return -1;
+  }
 
-  if (sock->client.available() == 0)
-      return MBEDTLS_ERR_SSL_WANT_READ;
+  if (sock->client.available() == 0) {
+    return MBEDTLS_ERR_SSL_WANT_READ;
+  }
 
   int ret = sock->client.read(buf, len);
   if (ret == 0) {
-      return MBEDTLS_ERR_SSL_WANT_READ;
+    return MBEDTLS_ERR_SSL_WANT_READ;
   }
   return ret;
 }
 
-int TlsTcpClient::tls_rng(void* handle, uint8_t* data, const size_t len_) {
+int TlsTcpClient::rng_Tls(void* handle, uint8_t* data, const size_t len_) {
   size_t len = len_;
   while (len>=4) {
     *((uint32_t*)data) = HAL_RNG_GetRandomNumber();
@@ -40,12 +49,23 @@ int TlsTcpClient::tls_rng(void* handle, uint8_t* data, const size_t len_) {
   return 0;
 }
 
+void TlsTcpClient::debug_Tls( void *ctx, int level,
+                      const char *file, int line,
+                      const char *str ) {
+    ((void) level);
+    debug_tls("%s:%04d: %s", file, line, str);
+}
+
 int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   int ret;
   connected = false;
   mbedtls_ssl_config_init(&conf);
   mbedtls_x509_crt_init(&cacert);
-  mbedtls_ssl_conf_rng(&conf, &TlsTcpClient::tls_rng, nullptr);
+  mbedtls_ssl_conf_rng(&conf, &TlsTcpClient::rng_Tls, nullptr);
+  mbedtls_ssl_conf_dbg(&conf, &TlsTcpClient::debug_Tls, nullptr);
+  #if defined(MBEDTLS_DEBUG_C)
+    mbedtls_debug_set_threshold(DEBUG_TLS_CORE_LEVEL);
+  #endif
 
   if ((ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT,
                   MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
@@ -139,7 +159,7 @@ int TlsTcpClient::read(unsigned char *buff, int length) {
       int ret = mbedtls_ssl_read(&ssl, buff, length);
       if (ret < 0) {
             switch (ret) {
-            case MBEDTLS_ERR_SSL_WANT_READ:
+              case MBEDTLS_ERR_SSL_WANT_READ:
                 break;
             case MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE:
                 ret = 0;
@@ -159,14 +179,18 @@ int TlsTcpClient::available() {
   return client.available();
 }
 
+bool TlsTcpClient::isConnected() {
+  if (client.connected())
+    return connected;
+  return false;
+}
+
 bool TlsTcpClient::verify() {
   int ret;
   if ((ret = mbedtls_ssl_get_verify_result(&ssl)) != 0 ) {
     char vrfy_buf[512];
     mbedtls_x509_crt_verify_info( vrfy_buf, sizeof( vrfy_buf ), "  ! ", ret );
-
-    Serial.println(vrfy_buf);
-
+    debug_tls("%s\n", vrfy_buf);
     return false;
   }
   return true;

@@ -23,8 +23,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MBED_TLS_SOCKET_h
-#define MBED_TLS_SOCKET_h
+#ifndef MBED_TLS_TCP_CLIENT_h
+#define MBED_TLS_TCP_CLIENT_h
 
 #include "application.h"
 #include "check_config.h"
@@ -38,6 +38,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "timing.h"
 #include "ssl_internal.h"
 #include "timer_hal.h"
+
+// for debugging.
+// #define DEBUG_TLS       1
+#if defined(MBEDTLS_DEBUG_C)
+#define DEBUG_TLS_CORE_LEVEL 1
+#define debug_tls( fmt, ... ) \
+    Serial.printf(fmt, ##__VA_ARGS__)
+#else /* !DEBUG_TLS */
+  #define debug_tls( fmt, ... ) ((void)0)
+#endif /* DEBUG_TLS */
+
 
 class TlsTcpClient {
 
@@ -53,8 +64,10 @@ private:
 
     static int send_Tls(void *ctx, const unsigned char *buf, size_t len);
     static int recv_Tls(void *ctx, unsigned char *buf, size_t len);
-    static int tls_rng(void* handle, uint8_t* data, const size_t len_);
-
+    static int rng_Tls(void* handle, uint8_t* data, const size_t len_);
+    static void debug_Tls( void *ctx, int level,
+                          const char *file, int line,
+                          const char *str );
     int handShake();
 
 public:
@@ -69,7 +82,7 @@ public:
     int read(unsigned char *buff, int length);
 
     int available();
-    bool isConnected() { return connected; }
+    bool isConnected();
     bool verify();
 };
 

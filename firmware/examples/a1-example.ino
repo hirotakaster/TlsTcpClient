@@ -67,13 +67,12 @@ void loop() {
     // connect HTTPS server.
     client.connect("www.hirotakaster.com", 443);
 
-    // check server certificate. if verify failed, TLS connection is alive.
     if (!client.verify()) {
       Serial.println("Server Certificates is in-valid.");
     }
 
     // Send request to HTTPS web server.
-    int len = sprintf((char *)buff, "GET / HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
+    int len = sprintf((char *)buff, "GET /robots.txt HTTP/1.0\r\nHost: www.hirotakaster.com\r\nContent-Length: 0\r\n\r\n");
     client.write(buff, len );
 
     // GET HTTPS response.
@@ -84,9 +83,11 @@ void loop() {
         int ret = client.read(buff, sizeof(buff) - 1);
         if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
             delay(100);
+            continue;
         } else if (ret <= 0) {
+            // no more read.
             break;
-        } else {
+        } else if (ret > 0){
             Serial.println((char *)buff);
         }
     }
