@@ -154,6 +154,13 @@ int TlsTcpClient::write(unsigned char *buff, int length) {
     return -1;
 }
 
+int TlsTcpClient::read() {
+  unsigned char buff[1];
+  int ret = read(buff, 1);
+  if (ret == 1) return buff[0];
+  else    return ret;
+}
+
 int TlsTcpClient::read(unsigned char *buff, int length) {
   if (connected) {
       int ret = mbedtls_ssl_read(&ssl, buff, length);
