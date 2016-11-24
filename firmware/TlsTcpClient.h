@@ -80,6 +80,7 @@ public:
     int connect(char* domain, uint16_t port);
     int write(unsigned char *buff, int length);
     int read(unsigned char *buff, int length);
+    void stop() {close();};
 
     int available();
     bool isConnected();
