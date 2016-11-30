@@ -57,31 +57,60 @@ void TlsTcpClient::debug_Tls( void *ctx, int level,
 }
 
 int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
+  return this->init(rootCaPem, rootCaPemSize, NULL, 0, NULL, 0);
+}
+
+int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize,
+         const char *clientCertPem, const size_t clientCertPemSize,
+         const char *clientKeyPem, const size_t clientKeyPemSize) {
+
   int ret;
   connected = false;
   mbedtls_ssl_config_init(&conf);
+  mbedtls_ssl_init(&ssl);
   mbedtls_x509_crt_init(&cacert);
-  mbedtls_ssl_conf_rng(&conf, &TlsTcpClient::rng_Tls, nullptr);
+  mbedtls_x509_crt_init(&clicert);
+  mbedtls_pk_init(&pkey);
+
   mbedtls_ssl_conf_dbg(&conf, &TlsTcpClient::debug_Tls, nullptr);
   #if defined(MBEDTLS_DEBUG_C)
     mbedtls_debug_set_threshold(DEBUG_TLS_CORE_LEVEL);
   #endif
 
-  if ((ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT,
-                  MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
+  if ((ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *)rootCaPem, rootCaPemSize)) < 0) {
+    debug_tls("enableTls mbedtls_x509_crt_parse error : %d\n", ret);
     return ret;
   }
 
-  if ((ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *)rootCaPem, rootCaPemSize)) < 0) {
+  if (clientCertPem != NULL && clientCertPemSize > 0) {
+    if ((ret = mbedtls_x509_crt_parse(&clicert, (const unsigned char *)clientCertPem, clientCertPemSize)) < 0) {
+      debug_tls("tlsClientKey mbedtls_x509_crt_parse error : %d\n", ret);
+      return ret;
+    }
+  }
+
+  if (clientKeyPem != NULL && clientKeyPemSize > 0) {
+    if ((ret = mbedtls_pk_parse_key(&pkey, (const unsigned char *)clientKeyPem, clientKeyPemSize, NULL, 0)) != 0) {
+      debug_tls("tlsClientKey mbedtls_pk_parse_key error : %d\n", ret);
+      return ret;
+    }
+  }
+
+  if ((ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT,
+                 MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
     return ret;
   }
   mbedtls_ssl_conf_min_version(&conf, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
-  mbedtls_ssl_conf_ca_chain(&conf, &cacert, nullptr);
 
   // if server certificates is not valid, connection will success. check certificates on verify() function.
   mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+  mbedtls_ssl_conf_rng(&conf, &TlsTcpClient::rng_Tls, nullptr);
+  mbedtls_ssl_conf_ca_chain(&conf, &cacert, nullptr);
 
-  mbedtls_ssl_init(&ssl);
+  if (clientCertPem != NULL && clientKeyPem != NULL) {
+    mbedtls_ssl_conf_own_cert(&conf, &clicert, &pkey);
+  }
+
   if((ret = mbedtls_ssl_setup(&ssl, &conf)) != 0) {
     return ret;
   }

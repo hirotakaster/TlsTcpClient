@@ -57,6 +57,8 @@ private:
     mbedtls_ssl_context ssl;
     mbedtls_ssl_config conf;
     mbedtls_x509_crt cacert;
+    mbedtls_x509_crt clicert;
+  	mbedtls_pk_context pkey;
     mbedtls_timing_delay_context timer;
 
     TCPClient client;
@@ -76,6 +78,9 @@ public:
     void close();
 
     int init(const char *rootCaPem, const size_t rootCaPemSize);
+    int init(const char *rootCaPem, const size_t rootCaPemSize,
+             const char *clientCertPem, const size_t clientCertPemSize,
+             const char *clientKeyPem, const size_t clientKeyPemSize);
     int connect(uint8_t *ip, uint16_t port);
     int connect(char* domain, uint16_t port);
     int write(unsigned char *buff, int length);
