@@ -1,5 +1,5 @@
 # Simple TLS Client library for Particle.
-This library is based [mbedTLS](https://tls.mbed.org/)  library, this can use for several TLS server. Now this library is compatible with every TLS server certificate, client certification is not supported.
+This library is based [mbedTLS](https://tls.mbed.org/)  library, this can use for several TLS server. Now this library is compatible with every TLS server certificate, client private key certification.
 
 This library's Cipher Suite is based AES and SHA, here is cipher suite list.
 * TLS_RSA_WITH_AES_256_CBC_SHA256

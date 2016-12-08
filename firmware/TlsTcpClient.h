@@ -58,7 +58,7 @@ private:
     mbedtls_ssl_config conf;
     mbedtls_x509_crt cacert;
     mbedtls_x509_crt clicert;
-    mbedtls_pk_context pkey;
+  	mbedtls_pk_context pkey;
     mbedtls_timing_delay_context timer;
 
     TCPClient client;
@@ -70,6 +70,7 @@ private:
     static void debug_Tls( void *ctx, int level,
                           const char *file, int line,
                           const char *str );
+    static int veryfyCert_Tls(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags);
     int handShake();
 
 public:

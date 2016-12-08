@@ -21,6 +21,9 @@ int TlsTcpClient::send_Tls(void *ctx, const unsigned char *buf, size_t len) {
 
 int TlsTcpClient::recv_Tls(void *ctx, unsigned char *buf, size_t len) {
   TlsTcpClient *sock = (TlsTcpClient *)ctx;
+  // TODO: need this delay?
+  delay(10);
+
   if (!sock->client.connected()) {
     return -1;
   }
@@ -56,6 +59,23 @@ void TlsTcpClient::debug_Tls( void *ctx, int level,
     debug_tls("%s:%04d: %s", file, line, str);
 }
 
+int TlsTcpClient::veryfyCert_Tls(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
+  char buf[1024];
+  ((void) data);
+
+  debug_tls("Verify requested for (Depth %d):\n", depth);
+  mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
+  debug_tls("%s", buf);
+
+  if((*flags) == 0) {
+    debug_tls("  This certificate has no flags\n");
+  } else {
+    debug_tls(buf, sizeof(buf), "  ! ", *flags);
+    debug_tls("%s\n", buf);
+  }
+  return 0;
+}
+
 int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize) {
   return this->init(rootCaPem, rootCaPemSize, NULL, 0, NULL, 0);
 }
@@ -78,20 +98,20 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize,
   #endif
 
   if ((ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *)rootCaPem, rootCaPemSize)) < 0) {
-    debug_tls("enableTls mbedtls_x509_crt_parse error : %d\n", ret);
+    debug_tls(" enableTls mbedtls_x509_crt_parse error : %d\n", ret);
     return ret;
   }
 
   if (clientCertPem != NULL && clientCertPemSize > 0) {
     if ((ret = mbedtls_x509_crt_parse(&clicert, (const unsigned char *)clientCertPem, clientCertPemSize)) < 0) {
-      debug_tls("tlsClientKey mbedtls_x509_crt_parse error : %d\n", ret);
+      debug_tls(" tlsClientKey mbedtls_x509_crt_parse error : %d\n", ret);
       return ret;
     }
   }
 
   if (clientKeyPem != NULL && clientKeyPemSize > 0) {
     if ((ret = mbedtls_pk_parse_key(&pkey, (const unsigned char *)clientKeyPem, clientKeyPemSize, NULL, 0)) != 0) {
-      debug_tls("tlsClientKey mbedtls_pk_parse_key error : %d\n", ret);
+      debug_tls(" tlsClientKey mbedtls_pk_parse_key error : %d\n", ret);
       return ret;
     }
   }
@@ -101,6 +121,7 @@ int TlsTcpClient::init(const char *rootCaPem, const size_t rootCaPemSize,
     return ret;
   }
   mbedtls_ssl_conf_min_version(&conf, MBEDTLS_SSL_MAJOR_VERSION_3, MBEDTLS_SSL_MINOR_VERSION_3);
+  mbedtls_ssl_conf_verify(&conf, &TlsTcpClient::veryfyCert_Tls, NULL);
 
   // if server certificates is not valid, connection will success. check certificates on verify() function.
   mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
