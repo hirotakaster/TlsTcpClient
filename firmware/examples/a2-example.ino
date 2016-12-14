@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "TlsTcpClient.h"
+#include "TlsTcpClient/TlsTcpClient.h"
 
 //
 // This example connect to the AWS IoT server(now testing).
