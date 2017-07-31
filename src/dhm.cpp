@@ -19,9 +19,12 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 /*
- *  Reference:
+ *  The following sources were referenced in the design of this implementation
+ *  of the Diffie-Hellman-Merkle algorithm:
  *
- *  http://www.cacr.math.uwaterloo.ca/hac/ (chapter 12)
+ *  [1] Handbook of Applied Cryptography - 1997, Chapter 12
+ *      Menezes, van Oorschot and Vanstone
+ *
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -56,7 +59,7 @@
 
 /* Implementation that should never be optimized out by the compiler */
 static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char *)v; while( n-- ) *p++ = 0;
+    volatile unsigned char *p = (volatile unsigned char *)v; while( n-- ) *p++ = 0;
 }
 
 /*
@@ -530,7 +533,7 @@ static int load_file( const char *path, unsigned char **buf, size_t *n )
     *n = (size_t) size;
 
     if( *n + 1 == 0 ||
-        ( *buf = (unsigned char *)mbedtls_calloc( 1, *n + 1 ) ) == NULL )
+        ( *buf = (unsgined char *)mbedtls_calloc( 1, *n + 1 ) ) == NULL )
     {
         fclose( f );
         return( MBEDTLS_ERR_DHM_ALLOC_FAILED );
@@ -622,4 +625,3 @@ exit:
 #endif /* MBEDTLS_SELF_TEST */
 
 #endif /* MBEDTLS_DHM_C */
-

@@ -340,4 +340,3 @@ void mbedtls_asn1_free_named_data_list( mbedtls_asn1_named_data **head );
 #endif
 
 #endif /* asn1.h */
-

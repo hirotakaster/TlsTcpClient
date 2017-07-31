@@ -26,7 +26,7 @@
 #include "md.h"
 
 #if defined(MBEDTLS_THREADING_C)
-#include "mbedtls/threading.h"
+#include "threading.h"
 #endif
 
 /*
@@ -297,4 +297,3 @@ int mbedtls_hmac_drbg_self_test( int verbose );
 #endif
 
 #endif /* hmac_drbg.h */
-

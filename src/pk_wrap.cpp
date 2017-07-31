@@ -30,6 +30,7 @@
 
 /* Even if RSA not activated, for the sake of RSA-alt */
 #include "rsa.h"
+#include "bignum.h"
 
 #include <string.h>
 
@@ -48,6 +49,8 @@
 #define mbedtls_calloc    calloc
 #define mbedtls_free       free
 #endif
+
+#include <limits.h>
 
 #if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
 /* Implementation that should never be optimized out by the compiler */
@@ -74,6 +77,11 @@ static int rsa_verify_wrap( void *ctx, mbedtls_md_type_t md_alg,
 {
     int ret;
 
+#if defined(MBEDTLS_HAVE_INT64)
+    if( md_alg == MBEDTLS_MD_NONE && UINT_MAX < hash_len )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+#endif /* MBEDTLS_HAVE_INT64 */
+
     if( sig_len < ((mbedtls_rsa_context *) ctx)->len )
         return( MBEDTLS_ERR_RSA_VERIFY_FAILED );
 
@@ -93,6 +101,11 @@ static int rsa_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
                    unsigned char *sig, size_t *sig_len,
                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng )
 {
+#if defined(MBEDTLS_HAVE_INT64)
+    if( md_alg == MBEDTLS_MD_NONE && UINT_MAX < hash_len )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+#endif /* MBEDTLS_HAVE_INT64 */
+
     *sig_len = ((mbedtls_rsa_context *) ctx)->len;
 
     return( mbedtls_rsa_pkcs1_sign( (mbedtls_rsa_context *) ctx, f_rng, p_rng, MBEDTLS_RSA_PRIVATE,
@@ -133,7 +146,7 @@ static int rsa_check_pair_wrap( const void *pub, const void *prv )
 
 static void *rsa_alloc_wrap( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_rsa_context ) );
+    void *ctx = (mbedtls_rsa_context *)mbedtls_calloc( 1, sizeof( mbedtls_rsa_context ) );
 
     if( ctx != NULL )
         mbedtls_rsa_init( (mbedtls_rsa_context *) ctx, 0, 0 );
@@ -212,7 +225,7 @@ static int eckey_verify_wrap( void *ctx, mbedtls_md_type_t md_alg,
 
     mbedtls_ecdsa_init( &ecdsa );
 
-    if( ( ret = mbedtls_ecdsa_from_keypair( &ecdsa, (const mbedtls_ecp_keypair*)ctx ) ) == 0 )
+    if( ( ret = mbedtls_ecdsa_from_keypair( &ecdsa, ctx ) ) == 0 )
         ret = ecdsa_verify_wrap( &ecdsa, md_alg, hash, hash_len, sig, sig_len );
 
     mbedtls_ecdsa_free( &ecdsa );
@@ -230,7 +243,7 @@ static int eckey_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
 
     mbedtls_ecdsa_init( &ecdsa );
 
-    if( ( ret = mbedtls_ecdsa_from_keypair( &ecdsa, (const mbedtls_ecp_keypair*)ctx ) ) == 0 )
+    if( ( ret = mbedtls_ecdsa_from_keypair( &ecdsa, ctx ) ) == 0 )
         ret = ecdsa_sign_wrap( &ecdsa, md_alg, hash, hash_len, sig, sig_len,
                                f_rng, p_rng );
 
@@ -249,7 +262,7 @@ static int eckey_check_pair( const void *pub, const void *prv )
 
 static void *eckey_alloc_wrap( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_ecp_keypair ) );
+    void *ctx = (mbedtls_ecp_keypair *)mbedtls_calloc( 1, sizeof( mbedtls_ecp_keypair ) );
 
     if( ctx != NULL )
         mbedtls_ecp_keypair_init( (mbedtls_ecp_keypair *)ctx );
@@ -348,7 +361,7 @@ static int ecdsa_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
 
 static void *ecdsa_alloc_wrap( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_ecdsa_context ) );
+    void *ctx = (mbedtls_ecdsa_context)mbedtls_calloc( 1, sizeof( mbedtls_ecdsa_context ) );
 
     if( ctx != NULL )
         mbedtls_ecdsa_init( (mbedtls_ecdsa_context *) ctx );
@@ -401,6 +414,11 @@ static int rsa_alt_sign_wrap( void *ctx, mbedtls_md_type_t md_alg,
                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng )
 {
     mbedtls_rsa_alt_context *rsa_alt = (mbedtls_rsa_alt_context *) ctx;
+
+#if defined(MBEDTLS_HAVE_INT64)
+    if( UINT_MAX < hash_len )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+#endif /* MBEDTLS_HAVE_INT64 */
 
     *sig_len = rsa_alt->key_len_func( rsa_alt->key );
 
@@ -457,7 +475,7 @@ static int rsa_alt_check_pair( const void *pub, const void *prv )
 
 static void *rsa_alt_alloc_wrap( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_rsa_alt_context ) );
+    void *ctx = (mbedtls_rsa_alt_context *)mbedtls_calloc( 1, sizeof( mbedtls_rsa_alt_context ) );
 
     if( ctx != NULL )
         memset( ctx, 0, sizeof( mbedtls_rsa_alt_context ) );
@@ -493,4 +511,3 @@ const mbedtls_pk_info_t mbedtls_rsa_alt_info = {
 #endif /* MBEDTLS_PK_RSA_ALT_SUPPORT */
 
 #endif /* MBEDTLS_PK_C */
-

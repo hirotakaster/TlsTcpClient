@@ -391,7 +391,8 @@ int mbedtls_pkcs5_self_test( int verbose )
             mbedtls_printf( "passed\n" );
     }
 
-    mbedtls_printf( "\n" );
+    if( verbose != 0 )
+        mbedtls_printf( "\n" );
 
 exit:
     mbedtls_md_free( &sha1_ctx );
@@ -403,4 +404,3 @@ exit:
 #endif /* MBEDTLS_SELF_TEST */
 
 #endif /* MBEDTLS_PKCS5_C */
-

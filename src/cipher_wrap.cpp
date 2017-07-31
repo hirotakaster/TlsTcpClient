@@ -49,6 +49,10 @@
 #include "des.h"
 #endif
 
+#if defined(MBEDTLS_BLOWFISH_C)
+#include "blowfish.h"
+#endif
+
 #if defined(MBEDTLS_GCM_C)
 #include "gcm.h"
 #endif
@@ -73,7 +77,7 @@
 /* shared by all GCM ciphers */
 static void *gcm_ctx_alloc( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_gcm_context ) );
+    void *ctx = (mbedtls_gcm_context *)mbedtls_calloc( 1, sizeof( mbedtls_gcm_context ) );
 
     if( ctx != NULL )
         mbedtls_gcm_init( (mbedtls_gcm_context *) ctx );
@@ -92,7 +96,7 @@ static void gcm_ctx_free( void *ctx )
 /* shared by all CCM ciphers */
 static void *ccm_ctx_alloc( void )
 {
-    void *ctx = mbedtls_calloc( 1, sizeof( mbedtls_ccm_context ) );
+    void *ctx = (mbedtls_ccm_context *)mbedtls_calloc( 1, sizeof( mbedtls_ccm_context ) );
 
     if( ctx != NULL )
         mbedtls_ccm_init( (mbedtls_ccm_context *) ctx );
@@ -102,7 +106,7 @@ static void *ccm_ctx_alloc( void )
 
 static void ccm_ctx_free( void *ctx )
 {
-    mbedtls_ccm_free( (mbedtls_ccm_context *)ctx );
+    mbedtls_ccm_free( ctx );
     mbedtls_free( ctx );
 }
 #endif /* MBEDTLS_CCM_C */
@@ -1445,4 +1449,3 @@ const mbedtls_cipher_definition_t mbedtls_cipher_definitions[] =
 int mbedtls_cipher_supported[NUM_CIPHERS];
 
 #endif /* MBEDTLS_CIPHER_C */
-

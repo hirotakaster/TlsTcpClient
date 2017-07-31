@@ -18,7 +18,6 @@
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
-#define HAVE_HARDCLOCK
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "config.h"
@@ -38,7 +37,12 @@
 #include "timing.h"
 
 #if !defined(MBEDTLS_TIMING_ALT)
-
+/*
+#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
+    !defined(__APPLE__) && !defined(_WIN32)
+#error "This module only works on Unix and Windows, see MBEDTLS_TIMING_C in config.h"
+#endif
+*/
 #ifndef asm
 #define asm __asm
 #endif
@@ -225,7 +229,6 @@ unsigned long mbedtls_timing_hardclock( void )
     if( hardclock_init == 0 )
     {
         gettimeofday( &tv_init, NULL );
-
         hardclock_init = 1;
     }
 
@@ -517,15 +520,15 @@ hard_test_done:
     return( 0 );
 }
 
-
 #endif /* MBEDTLS_SELF_TEST */
 
 #include "timer_hal.h"
-
+/*
 extern "C" unsigned long mbedtls_timing_hardclock()
 {
-        return HAL_Timer_Microseconds();
+    return HAL_Timer_Microseconds();
 }
+*/
 
 // todo - would prefer this was provided as a callback.
 extern "C" int _gettimeofday( struct timeval *tv, void *tzvp )
@@ -535,6 +538,5 @@ extern "C" int _gettimeofday( struct timeval *tv, void *tzvp )
     tv->tv_usec = ( t % 1000 )*1000;  // get remaining microseconds
     return 0;  // return non-zero for error
 } // end _gettimeofday()
-
 
 #endif /* MBEDTLS_TIMING_C */

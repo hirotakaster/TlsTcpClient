@@ -127,4 +127,3 @@ int mbedtls_pem_write_buffer( const char *header, const char *footer,
 #endif
 
 #endif /* pem.h */
-

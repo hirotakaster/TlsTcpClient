@@ -26,7 +26,7 @@
 #include "aes.h"
 
 #if defined(MBEDTLS_THREADING_C)
-#include "mbedtls/threading.h"
+#include "threading.h"
 #endif
 
 #define MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED        -0x0034  /**< The entropy source failed. */
@@ -288,4 +288,3 @@ int mbedtls_ctr_drbg_seed_entropy_len( mbedtls_ctr_drbg_context *,
 #endif
 
 #endif /* ctr_drbg.h */
-

@@ -122,6 +122,7 @@
      #define MBEDTLS_HAVE_INT64
      typedef  int64_t mbedtls_mpi_sint;
      typedef uint64_t mbedtls_mpi_uint;
+     /* mbedtls_t_udbl defined as 128-bit unsigned int */
      typedef unsigned int mbedtls_t_udbl __attribute__((mode(TI)));
      #define MBEDTLS_HAVE_UDBL
   #else
@@ -339,7 +340,7 @@ int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
 
 #if defined(MBEDTLS_FS_IO)
 /**
- * \brief          Read X from an opened file
+ * \brief          Read MPI from a line in an opened file
  *
  * \param X        Destination MPI
  * \param radix    Input numeric base
@@ -348,6 +349,15 @@ int mbedtls_mpi_write_string( const mbedtls_mpi *X, int radix,
  * \return         0 if successful, MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if
  *                 the file read buffer is too small or a
  *                 MBEDTLS_ERR_MPI_XXX error code
+ *
+ * \note           On success, this function advances the file stream
+ *                 to the end of the current line or to EOF.
+ *
+ *                 The function returns 0 on an empty line.
+ *
+ *                 Leading whitespaces are ignored, as is a
+ *                 '0x' prefix for radix 16.
+ *
  */
 int mbedtls_mpi_read_file( mbedtls_mpi *X, int radix, FILE *fin );
 
@@ -664,8 +674,8 @@ int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B 
  *
  * \return         0 if successful,
  *                 MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed,
- *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if N is negative or nil
-                   MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if A has no inverse mod N
+ *                 MBEDTLS_ERR_MPI_BAD_INPUT_DATA if N is <= 1,
+                   MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if A has no inverse mod N.
  */
 int mbedtls_mpi_inv_mod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N );
 
@@ -714,4 +724,3 @@ int mbedtls_mpi_self_test( int verbose );
 #endif
 
 #endif /* bignum.h */
-

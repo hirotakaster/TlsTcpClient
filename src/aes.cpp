@@ -31,8 +31,6 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "hal_platform.h"
-
 #if defined(MBEDTLS_AES_C)
 
 #include <string.h>
@@ -58,7 +56,7 @@
 
 /* Implementation that should never be optimized out by the compiler */
 static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (volatile unsigned char *)v; while( n-- ) *p++ = 0;
+    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
 }
 
 /*
@@ -90,17 +88,10 @@ static int aes_padlock_ace = -1;
 #endif
 
 #if defined(MBEDTLS_AES_ROM_TABLES)
-
-#if HAL_PLATFORM_CLOUD_TCP
-#define UDP_ONLY(x)
-#else
-#define UDP_ONLY(x) x
-#endif
-
 /*
  * Forward S-box
  */
-UDP_ONLY(static) const unsigned char FSb[256] =
+static const unsigned char FSb[256] =
 {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
     0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -207,19 +198,19 @@ UDP_ONLY(static) const unsigned char FSb[256] =
     V(CB,B0,B0,7B), V(FC,54,54,A8), V(D6,BB,BB,6D), V(3A,16,16,2C)
 
 #define V(a,b,c,d) 0x##a##b##c##d
-UDP_ONLY(static) const uint32_t FT0[256] = { FT };
+static const uint32_t FT0[256] = { FT };
 #undef V
 
 #define V(a,b,c,d) 0x##b##c##d##a
-UDP_ONLY(static) const uint32_t FT1[256] = { FT };
+static const uint32_t FT1[256] = { FT };
 #undef V
 
 #define V(a,b,c,d) 0x##c##d##a##b
-UDP_ONLY(static) const uint32_t FT2[256] = { FT };
+static const uint32_t FT2[256] = { FT };
 #undef V
 
 #define V(a,b,c,d) 0x##d##a##b##c
-UDP_ONLY(static) const uint32_t FT3[256] = { FT };
+static const uint32_t FT3[256] = { FT };
 #undef V
 
 #undef FT
@@ -227,7 +218,7 @@ UDP_ONLY(static) const uint32_t FT3[256] = { FT };
 /*
  * Reverse S-box
  */
-UDP_ONLY(static) const unsigned char RSb[256] =
+static const unsigned char RSb[256] =
 {
     0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38,
     0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
@@ -334,19 +325,19 @@ UDP_ONLY(static) const unsigned char RSb[256] =
     V(61,84,CB,7B), V(70,B6,32,D5), V(74,5C,6C,48), V(42,57,B8,D0)
 
 #define V(a,b,c,d) 0x##a##b##c##d
-UDP_ONLY(static) const uint32_t RT0[256] = { RT };
+static const uint32_t RT0[256] = { RT };
 #undef V
 
 #define V(a,b,c,d) 0x##b##c##d##a
-UDP_ONLY(static) const uint32_t RT1[256] = { RT };
+static const uint32_t RT1[256] = { RT };
 #undef V
 
 #define V(a,b,c,d) 0x##c##d##a##b
-UDP_ONLY(static) const uint32_t RT2[256] = { RT };
+static const uint32_t RT2[256] = { RT };
 #undef V
 
 #define V(a,b,c,d) 0x##d##a##b##c
-UDP_ONLY(static) const uint32_t RT3[256] = { RT };
+static const uint32_t RT3[256] = { RT };
 #undef V
 
 #undef RT
@@ -719,9 +710,9 @@ exit:
  * AES-ECB block encryption
  */
 #if !defined(MBEDTLS_AES_ENCRYPT_ALT)
-void mbedtls_aes_encrypt( mbedtls_aes_context *ctx,
-                          const unsigned char input[16],
-                          unsigned char output[16] )
+int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
+                                  const unsigned char input[16],
+                                  unsigned char output[16] )
 {
     int i;
     uint32_t *RK, X0, X1, X2, X3, Y0, Y1, Y2, Y3;
@@ -769,6 +760,8 @@ void mbedtls_aes_encrypt( mbedtls_aes_context *ctx,
     PUT_UINT32_LE( X1, output,  4 );
     PUT_UINT32_LE( X2, output,  8 );
     PUT_UINT32_LE( X3, output, 12 );
+
+    return( 0 );
 }
 #endif /* !MBEDTLS_AES_ENCRYPT_ALT */
 
@@ -776,9 +769,9 @@ void mbedtls_aes_encrypt( mbedtls_aes_context *ctx,
  * AES-ECB block decryption
  */
 #if !defined(MBEDTLS_AES_DECRYPT_ALT)
-void mbedtls_aes_decrypt( mbedtls_aes_context *ctx,
-                          const unsigned char input[16],
-                          unsigned char output[16] )
+int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
+                                  const unsigned char input[16],
+                                  unsigned char output[16] )
 {
     int i;
     uint32_t *RK, X0, X1, X2, X3, Y0, Y1, Y2, Y3;
@@ -826,6 +819,8 @@ void mbedtls_aes_decrypt( mbedtls_aes_context *ctx,
     PUT_UINT32_LE( X1, output,  4 );
     PUT_UINT32_LE( X2, output,  8 );
     PUT_UINT32_LE( X3, output, 12 );
+
+    return( 0 );
 }
 #endif /* !MBEDTLS_AES_DECRYPT_ALT */
 
@@ -855,11 +850,9 @@ int mbedtls_aes_crypt_ecb( mbedtls_aes_context *ctx,
 #endif
 
     if( mode == MBEDTLS_AES_ENCRYPT )
-        mbedtls_aes_encrypt( ctx, input, output );
+        return( mbedtls_internal_aes_encrypt( ctx, input, output ) );
     else
-        mbedtls_aes_decrypt( ctx, input, output );
-
-    return( 0 );
+        return( mbedtls_internal_aes_decrypt( ctx, input, output ) );
 }
 
 #if defined(MBEDTLS_CIPHER_MODE_CBC)
@@ -1231,7 +1224,9 @@ int mbedtls_aes_self_test( int verbose )
     int ret = 0, i, j, u, v;
     unsigned char key[32];
     unsigned char buf[64];
+#if defined(MBEDTLS_CIPHER_MODE_CBC) || defined(MBEDTLS_CIPHER_MODE_CFB)
     unsigned char iv[16];
+#endif
 #if defined(MBEDTLS_CIPHER_MODE_CBC)
     unsigned char prv[16];
 #endif
@@ -1497,4 +1492,3 @@ exit:
 #endif /* MBEDTLS_SELF_TEST */
 
 #endif /* MBEDTLS_AES_C */
-
