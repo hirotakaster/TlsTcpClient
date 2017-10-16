@@ -3,7 +3,7 @@ This library is based [mbedTLS](https://tls.mbed.org/)  library, this can use fo
 
 This library's Cipher Suite is based AES and SHA, here is cipher suite list.
 * TLS_RSA_WITH_AES_256_GCM_SHA384
-* TLS_RSA_WITH_AES_256_CBC_SHA256
+* TLS_RSA_WITH_AES_256_CBC_SHA384
 * TLS_RSA_WITH_AES_128_GCM_SHA256
 * TLS_RSA_WITH_AES_128_CBC_SHA256
 * TLS_RSA_PSK_WITH_AES_256_GCM_SHA384
