@@ -77,7 +77,7 @@
  *
  * Comment if your system does not support time functions
  */
-#define MBEDTLS_HAVE_TIME
+// #define MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -89,7 +89,7 @@
  *
  * Comment if your system does not have a correct clock.
  */
-#define MBEDTLS_HAVE_TIME_DATE
+// #define MBEDTLS_HAVE_TIME_DATE
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
@@ -2682,3 +2682,4 @@
 #include "check_config.h"
 
 #endif /* MBEDTLS_CONFIG_H */
+
