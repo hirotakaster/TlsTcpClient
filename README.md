@@ -3,7 +3,7 @@ This library is based [mbedTLS](https://tls.mbed.org/) library version 2.6.0, th
 
 This library's Cipher Suite is based AES and SHA only for application firmware size, here is cipher suite list.
 * TLS_RSA_WITH_AES_256_CBC_SHA256
-* TLS_RSA_WITH_AES_128_CBF_SHA256
+* TLS_RSA_WITH_AES_128_CBC_SHA256
 * TLS_EMPTY_RENOGOTIATION_INFO_SCSV
 
 ## Example
