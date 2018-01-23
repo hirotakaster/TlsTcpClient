@@ -1,17 +1,10 @@
 # Simple TLS Client library for Particle.
-This library is based [mbedTLS](https://tls.mbed.org/)  library, this can use for several TLS server. Now this library is compatible with every TLS server certificate, client private key certification. Now supported TLS 1.0, 1.1, 1.2.
+This library is based [mbedTLS](https://tls.mbed.org/) library version 2.6.0, this can use for several TLS server. Now this library is compatible with every TLS server certificate, client private key certification. Now supported TLS 1.0, 1.1, 1.2.
 
-This library's Cipher Suite is based AES and SHA, here is cipher suite list.
-* TLS_RSA_WITH_AES_256_GCM_SHA384
-* TLS_RSA_WITH_AES_256_CBC_SHA384
-* TLS_RSA_WITH_AES_128_GCM_SHA256
-* TLS_RSA_WITH_AES_128_CBC_SHA256
-* TLS_RSA_PSK_WITH_AES_256_GCM_SHA384
-* TLS_RSA_PSK_WITH_AES_256_CBC_SHA384
-* TLS_RSA_PSK_WITH_AES_128_GCM_SHA256
-* TLS_RSA_PSK_WITH_AES_128_CBC_SHA256
+This library's Cipher Suite is based AES and SHA only for application firmware size, here is cipher suite list.
+* TLS_RSA_WITH_AES_256_CBC_SHA256
+* TLS_RSA_WITH_AES_128_CBF_SHA256
 * TLS_EMPTY_RENOGOTIATION_INFO_SCSV
-
 
 ## Example
 Some sample sketches included(firmware/examples/a1-example.ino).

@@ -40,9 +40,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "timer_hal.h"
 
 // for debugging.
-// #define DEBUG_TLS       1
+#define DEBUG_TLS       0
 #if defined(MBEDTLS_DEBUG_C)
-#define DEBUG_TLS_CORE_LEVEL 1
+#define DEBUG_TLS_CORE_LEVEL 3
 #define debug_tls( fmt, ... ) \
     Serial.printf(fmt, ##__VA_ARGS__)
 #else /* !DEBUG_TLS */
@@ -54,6 +54,7 @@ class TlsTcpClient {
 
 private:
     mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_ssl_context ssl;
     mbedtls_ssl_config conf;
     mbedtls_x509_crt cacert;
@@ -67,9 +68,6 @@ private:
     static int send_Tls(void *ctx, const unsigned char *buf, size_t len);
     static int recv_Tls(void *ctx, unsigned char *buf, size_t len);
     static int rng_Tls(void* handle, uint8_t* data, const size_t len_);
-    static void debug_Tls( void *ctx, int level,
-                          const char *file, int line,
-                          const char *str );
     static int veryfyCert_Tls(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags);
     int handShake();
 
@@ -92,6 +90,11 @@ public:
     int available();
     bool isConnected();
     bool verify();
+
+    static void debug_Tls( void *ctx, int level,
+                          const char *file, int line,
+                          const char *str );
+    static time_t particle_Time(time_t* ttime);
 };
 
 #endif
