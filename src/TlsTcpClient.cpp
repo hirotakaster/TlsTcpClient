@@ -160,6 +160,7 @@ void TlsTcpClient::close() {
 int TlsTcpClient::connect(char* domain, uint16_t port) {
   int ret;
   if (!client.connect(domain, port)) {
+      debug_tls(" could not connect to server : %s\n", domain);
       return -1;
   }
 

@@ -44,7 +44,7 @@
 
 /* Implementation that should never be optimized out by the compiler */
 static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
+    volatile unsigned char *p = (volatile unsigned char *)v; while( n-- ) *p++ = 0;
 }
 
 #define MAGIC1       0xFF00AA55
@@ -231,7 +231,7 @@ static int verify_chain()
 
 static void *buffer_alloc_calloc( size_t n, size_t size )
 {
-    memory_header *new, *cur = heap.first_free;
+    memory_header *newp, *cur = heap.first_free;
     unsigned char *p;
     void *ret;
     size_t original_len, len;
@@ -321,37 +321,37 @@ static void *buffer_alloc_calloc( size_t n, size_t size )
     }
 
     p = ( (unsigned char *) cur ) + sizeof(memory_header) + len;
-    new = (memory_header *) p;
+    newp = (memory_header *) p;
 
-    new->size = cur->size - len - sizeof(memory_header);
-    new->alloc = 0;
-    new->prev = cur;
-    new->next = cur->next;
+    newp->size = cur->size - len - sizeof(memory_header);
+    newp->alloc = 0;
+    newp->prev = cur;
+    newp->next = cur->next;
 #if defined(MBEDTLS_MEMORY_BACKTRACE)
-    new->trace = NULL;
-    new->trace_count = 0;
+    newp->trace = NULL;
+    newp->trace_count = 0;
 #endif
-    new->magic1 = MAGIC1;
-    new->magic2 = MAGIC2;
+    newp->magic1 = MAGIC1;
+    newp->magic2 = MAGIC2;
 
-    if( new->next != NULL )
-        new->next->prev = new;
+    if( newp->next != NULL )
+        newp->next->prev = newp;
 
     // Replace cur with new in free_list
     //
-    new->prev_free = cur->prev_free;
-    new->next_free = cur->next_free;
-    if( new->prev_free != NULL )
-        new->prev_free->next_free = new;
+    newp->prev_free = cur->prev_free;
+    newp->next_free = cur->next_free;
+    if( newp->prev_free != NULL )
+        newp->prev_free->next_free = newp;
     else
-        heap.first_free = new;
+        heap.first_free = newp;
 
-    if( new->next_free != NULL )
-        new->next_free->prev_free = new;
+    if( newp->next_free != NULL )
+        newp->next_free->prev_free = newp;
 
     cur->alloc = 1;
     cur->size = len;
-    cur->next = new;
+    cur->next = newp;
     cur->prev_free = NULL;
     cur->next_free = NULL;
 
