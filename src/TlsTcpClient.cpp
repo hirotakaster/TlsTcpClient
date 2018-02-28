@@ -199,7 +199,7 @@ int TlsTcpClient::handShake() {
       }
   } while(ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 
-  // clean ca cert/crt/pkey for memory limitation
+  // clean ca cert/crt/pkey
   mbedtls_x509_crt_free(&cacert);
   mbedtls_x509_crt_free(&clicert);
   mbedtls_pk_free(&pkey);
@@ -267,4 +267,3 @@ bool TlsTcpClient::verify() {
   }
   return true;
 }
-
