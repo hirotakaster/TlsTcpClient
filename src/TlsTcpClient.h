@@ -27,16 +27,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MBED_TLS_TCP_CLIENT_h
 
 #include "application.h"
-#include "check_config.h"
+#include "mbedtls/check_config.h"
 
-#include "net.h"
-#include "debug.h"
-#include "ssl.h"
-#include "entropy.h"
-#include "ctr_drbg.h"
-#include "error.h"
-#include "timing.h"
-#include "ssl_internal.h"
+#include "mbedtls/net.h"
+#include "mbedtls/debug.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/error.h"
+#include "mbedtls/timing.h"
+#include "mbedtls/ssl_internal.h"
 #include "timer_hal.h"
 
 // for debugging.
