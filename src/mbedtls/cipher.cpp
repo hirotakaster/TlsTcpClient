@@ -1076,7 +1076,7 @@ int mbedtls_cipher_auth_encrypt( mbedtls_cipher_context_t *ctx,
         }
 
         *olen = ilen;
-        return( mbedtls_chachapoly_encrypt_and_tag( (mbedtls_chachapoly_context *)ctx->cipher_ctx,
+        return( mbedtls_chachapoly_encrypt_and_tag( ctx->cipher_ctx,
                                 ilen, iv, ad, ad_len, input, output, tag ) );
     }
 #endif /* MBEDTLS_CHACHAPOLY_C */
@@ -1147,7 +1147,7 @@ int mbedtls_cipher_auth_decrypt( mbedtls_cipher_context_t *ctx,
         }
 
         *olen = ilen;
-        ret = mbedtls_chachapoly_auth_decrypt( (mbedtls_chachapoly_context *)ctx->cipher_ctx, ilen,
+        ret = mbedtls_chachapoly_auth_decrypt( ctx->cipher_ctx, ilen,
                                 iv, ad, ad_len, tag, input, output );
 
         if( ret == MBEDTLS_ERR_CHACHAPOLY_AUTH_FAILED )
